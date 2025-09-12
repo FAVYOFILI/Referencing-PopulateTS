@@ -8,9 +8,11 @@ import {
   deleteOneBook,
   deleteAllBooks,
 } from "../controller/bookController";
+// import { JWT } from "../JWT/JWT";
 
 export const BookRouter: Router = express.Router()
 
+// BookRouter.use(JWT)
 BookRouter.post("/createbook", Createbook)
 BookRouter.get("/getone/:id", GetOneBook)
 BookRouter.get("/getAll", GetAllBooks);

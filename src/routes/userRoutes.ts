@@ -1,21 +1,21 @@
 import express, { Router } from "express";
-
 import {
   deleteAll,
   deleteOne,
   GetAll,
   GetOne,
-  // LoginUser,
+  LoginUser,
   SignUp,
   UpdateUser,
 } from "../controller/userController";
-import {simpleLogin} from "../middleware/middleware"
+// import { JWT } from "../JWT/JWT";
+
 
 export const UserRouter: Router = express.Router();
 
+// UserRouter.use(JWT)
 UserRouter.post("/signup", SignUp);
-// UserRouter.post("/login", LoginUser);
-UserRouter.post("/login", simpleLogin);
+UserRouter.post("/login", LoginUser);
 UserRouter.get("/getone/:id", GetOne);
 UserRouter.get("/getAll", GetAll);
 UserRouter.patch("/update/:id", UpdateUser);

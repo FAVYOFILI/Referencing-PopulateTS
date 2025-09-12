@@ -1,8 +1,8 @@
 import { IUser, Usermodel } from "../model/usermodel";
 import { BookModel } from "../model/bookmodel";
 import argon2 from "argon2";
-import { Request, Response } from "express";
-// import {simpleLogin} from "../middleware/middleware";
+import { Request, Response, NextFunction } from "express";
+import generateToken from "../utils/generate";
 
 export const SignUp = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -36,65 +36,40 @@ export const SignUp = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// export const LoginUser = async (req: Request, res: Response): Promise<void> => {
-//   try {
-//     const { email, password } = req.body as Pick<IUser, "email" | "password">;
-//     if (!email || !password) {
-//       res.status(400).json({ message: "All fields are required" });
-//       return;
-//     }
-
-//     const checkLogin = await Usermodel.findOne({ email });
-//     if (!checkLogin) {
-//       res.status(400).json({ message: "Invalid email" });
-//       return;
-//     }
-
-//     const isMatch = await argon2.verify(checkLogin.password, password);
-//     if (!isMatch) {
-//       res.status(400).json({ message: "Invalid password" });
-//       return;
-//     }
-
-//     // Update and save login status
-//     checkLogin.isLogin = true;
-//     await checkLogin.save();
-
-//     res.status(200).json({
-//       message: "Login successful",
-//       name: checkLogin.name,
-//       email: checkLogin.email,
-//       password:checkLogin.password,
-//       phoneNumber:checkLogin.phoneNumber
-
-//     });
-//   } catch (err: any) {
-//     res.status(500).json({ message: "An error occurred", err: err.message });
-//   }
-// };
-
-export const simpleLogin = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const LoginUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password } = req.body;
-
-    const user = await Usermodel.findOne({ email });
-
-    if (!user || user.password !== password) {
-      res.status(401).json({ error: "Invalid login" });
+    const { email, password } = req.body as Pick<IUser, "email" | "password">;
+    if (!email || !password) {
+      res.status(400).json({ message: "All fields are required" });
       return;
     }
 
-    user.isLogin = true;
-    await user.save();
+    const checkLogin = await Usermodel.findOne({ email });
+    if (!checkLogin) {
+      res.status(400).json({ message: "Invalid email" });
+      return;
+    }
 
-    res.json({
-      success: true,
-      name: user.name,
-      email: user.email,
-      phoneNumber: user.phoneNumber,
+    const isMatch = await argon2.verify(checkLogin.password, password);
+    if (!isMatch) {
+      res.status(400).json({ message: "Invalid password" });
+      return;
+    }
+
+    // Update and save login status
+    checkLogin.isLogin = true;
+    await checkLogin.save();
+
+    const token = generateToken(String(checkLogin._id), checkLogin.role)
+
+    res.status(200).json({
+      message: "Login successful",
+      name: checkLogin.name,
+      email: checkLogin.email,
+      password:checkLogin.password,
+      phoneNumber:checkLogin.phoneNumber,
+      token
+
     });
   } catch (err: any) {
     res.status(500).json({ message: "An error occurred", err: err.message });
@@ -121,13 +96,20 @@ export const CreateBook = async (
     }
 
     // Create the book
-    const createBook = await BookModel.create({
+    const createBook = new BookModel({
       title,
       author,
       seller,
       yearPublished,
       category,
     });
+    // console.log(createBook);
+    // console.log(sellerExists);
+
+    // createBook.seller = sellerExists._id
+    // createBook.save()
+
+    // console.log(createBook);
 
     // Associate the book with the user using findByIdAndUpdate
     const updatedUser = await Usermodel.findByIdAndUpdate(
