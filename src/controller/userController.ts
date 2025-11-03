@@ -60,19 +60,18 @@ export const LoginUser = async (req: Request, res: Response): Promise<void> => {
     checkLogin.isLogin = true;
     await checkLogin.save();
 
-    const token = generateToken(String(checkLogin._id), checkLogin.role)
+    const token = generateToken(String(checkLogin._id), checkLogin.role);
 
     res.status(200).json({
       message: "Login successful",
       name: checkLogin.name,
       email: checkLogin.email,
-      password:checkLogin.password,
-      phoneNumber:checkLogin.phoneNumber,
-      token
-
+      password: checkLogin.password,
+      phoneNumber: checkLogin.phoneNumber,
+      token,
     });
   } catch (err: any) {
-    res.status(500).json({ message: "An error occurred", err: err.message });
+    res.status(500).json({ message: "An error occurred", err: err.message } );
   }
 };
 
